@@ -43,33 +43,11 @@
     .stk {
       position: absolute;
       font-size: var(--sz, 2rem);
-      animation: float var(--dur, 6s) var(--delay, 0s) ease-in-out infinite alternate;
       filter: drop-shadow(2px 3px 4px rgba(0,0,0,.18));
       user-select: none;
       pointer-events: auto;
       cursor: pointer;
-    }
-    @keyframes float {
-      0%   { transform: translateY(0px)              rotate(var(--r1,-8deg)) scale(1); }
-      25%  { transform: translateY(calc(var(--ty,-28px) * .3))  rotate(calc((var(--r1,-8deg) + var(--r2,8deg)) / 2)) scale(1.02); }
-      50%  { transform: translateY(var(--ty,-28px))  rotate(var(--r2,8deg)) scale(1.05); }
-      75%  { transform: translateY(calc(var(--ty,-28px) * .6))  rotate(calc((var(--r1,-8deg) + var(--r2,8deg)) / 2)) scale(1.03); }
-      100% { transform: translateY(0px)              rotate(var(--r1,-8deg)) scale(1); }
-    }
-    @keyframes stkFly {
-      0%   { transform: translateY(0)      rotate(var(--r1,-5deg)) scale(1);   filter: drop-shadow(2px 3px 4px rgba(0,0,0,.18)); }
-      15%  { transform: translateY(-90px)  rotate(30deg)           scale(2);   filter: drop-shadow(8px 14px 18px rgba(0,0,0,.3)); }
-      35%  { transform: translateY(-130px) rotate(-25deg)          scale(1.7); }
-      55%  { transform: translateY(-80px)  rotate(20deg)           scale(1.9); }
-      75%  { transform: translateY(-110px) rotate(-10deg)          scale(1.6); }
-      90%  { transform: translateY(-30px)  rotate(8deg)            scale(1.2); }
-      100% { transform: translateY(0)      rotate(var(--r1,-5deg)) scale(1);   filter: drop-shadow(2px 3px 4px rgba(0,0,0,.18)); }
-    }
-    @keyframes stkPop {
-      0%   { transform: scale(1); }
-      40%  { transform: scale(2.2) rotate(20deg); filter: drop-shadow(0 0 12px rgba(255,200,0,.8)); }
-      70%  { transform: scale(.85) rotate(-10deg); }
-      100% { transform: scale(1); }
+      will-change: transform;
     }
 
     /* ── main content ── */
@@ -741,48 +719,92 @@
     { e:'🍋', sz:'1.8rem' }, { e:'🦊', sz:'2rem'  },  { e:'🌊', sz:'2rem'  },
     { e:'🎸', sz:'2rem'  },  { e:'🍩', sz:'1.8rem' }, { e:'🪄', sz:'2rem'  },
   ];
+
+  // ── evenly spread stickers across a grid with jitter ──
   (function spawnStickers() {
     const c = document.getElementById('stickers');
-    STICKERS.forEach(({ e, sz }) => {
+    const count = STICKERS.length;
+    const cols = Math.ceil(Math.sqrt(count * 1.6));
+    const rows = Math.ceil(count / cols);
+    const cellW = 100 / cols;
+    const cellH = 100 / rows;
+    const shuffled = [...STICKERS].sort(() => Math.random() - 0.5);
+
+    const stkObjs = [];
+
+    shuffled.forEach(({ e, sz }, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      // place in cell center + small jitter
+      const lx = cellW * col + cellW * (.15 + Math.random() * .7);
+      const ty = cellH * row + cellH * (.15 + Math.random() * .7);
+
       const d = document.createElement('div');
       d.className = 'stk'; d.textContent = e;
-      const lx = Math.random() * 93;
-      const ty = Math.random() * 92;
-      const dur = (7 + Math.random() * 7).toFixed(1);
-      const delay = (Math.random() * 8).toFixed(1);
-      const r1 = (Math.random() * 18 - 9).toFixed(1);
-      const r2 = (Math.random() * 18 - 9).toFixed(1);
-      const tyv = -(22 + Math.random() * 32).toFixed(0);
-      const baseAnim = `float ${dur}s ${delay}s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite`;
-      d.style.cssText = `left:${lx}%;top:${ty}%;--sz:${sz};--r1:${r1}deg;--r2:${r2}deg;--ty:${tyv}px;`;
-      d.style.animation = baseAnim;
-
-      let busy = false;
-
-      // hover → fly
-      d.addEventListener('mouseenter', () => {
-        if (busy) return;
-        busy = true;
-        d.style.animation = 'stkFly 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards';
-        d.style.zIndex = '50';
-      });
-
-      // click → pop
-      d.addEventListener('click', (ev) => {
-        ev.stopPropagation();
-        d.style.animation = 'stkPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards';
-        d.style.zIndex = '50';
-        busy = true;
-      });
-
-      d.addEventListener('animationend', () => {
-        busy = false;
-        d.style.animation = baseAnim;
-        d.style.zIndex = '';
-      });
-
+      d.style.cssText = `left:${lx}%;top:${ty}%;--sz:${sz};`;
       c.appendChild(d);
+
+      stkObjs.push({
+        el: d,
+        // float params
+        floatAmp:   22 + Math.random() * 28,
+        floatSpeed: 0.25 + Math.random() * 0.35,
+        floatPhase: Math.random() * Math.PI * 2,
+        rotAmp:     6 + Math.random() * 10,
+        rotPhase:   Math.random() * Math.PI * 2,
+        // proximity state (lerped)
+        px: 0, py: 0, ps: 1,
+      });
+
+      // click → pop burst
+      d.addEventListener('click', ev => {
+        ev.stopPropagation();
+        const s = stkObjs[i];
+        s.ps = 2.2;
+      });
     });
+
+    // ── proximity + float RAF loop ──
+    let mouseX = -9999, mouseY = -9999;
+    document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+
+    const RADIUS = 200; // pixels of influence
+
+    function loop(time) {
+      const t = time / 1000;
+      stkObjs.forEach(s => {
+        // float
+        const floatY = Math.sin(t * s.floatSpeed + s.floatPhase) * s.floatAmp;
+        const rot    = Math.sin(t * s.floatSpeed * 0.65 + s.rotPhase) * s.rotAmp;
+
+        // proximity repulsion
+        const rect = s.el.getBoundingClientRect();
+        const cx = rect.left + rect.width  / 2;
+        const cy = rect.top  + rect.height / 2;
+        const dx = cx - mouseX;
+        const dy = cy - mouseY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        let tpx = 0, tpy = 0, tps = 1;
+        if (dist < RADIUS && dist > 1) {
+          const force = Math.pow(1 - dist / RADIUS, 1.8);
+          tpx = (dx / dist) * force * 80;
+          tpy = (dy / dist) * force * 80;
+          tps = 1 + force * 0.7;
+        }
+
+        // smooth lerp
+        const L = 0.1;
+        s.px += (tpx - s.px) * L;
+        s.py += (tpy - s.py) * L;
+        s.ps += (tps - s.ps) * L;
+
+        s.el.style.transform =
+          `translate(${s.px}px, ${floatY + s.py}px) rotate(${rot}deg) scale(${s.ps})`;
+      });
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
   })();
 
   function p2(n) { return String(n).padStart(2, '0'); }
