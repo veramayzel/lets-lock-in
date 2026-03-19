@@ -136,8 +136,12 @@
       transition: stroke-dashoffset 1s linear;
     }
     .timer-inner {
-      position: absolute; text-align: center;
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
       display: flex; flex-direction: column; align-items: center;
+      width: 100%;
     }
     .digits {
       font-family: 'Fredoka', sans-serif;
@@ -398,9 +402,10 @@
       .left-col { width: 100%; align-items: center; }
       .card { padding: 16px 16px 14px; text-align: center; }
       .phase-row { justify-content: center; gap: 12px; }
-      .ring-wrap { width: 220px; height: 220px; transform: scale(0.72); transform-origin: center top; margin-bottom: -52px; }
-      .digits { font-size: 2.6rem; }
-      .dots-row { margin-top: 0; }
+      .ring-wrap { width: 200px; height: 200px; margin: 0 auto; overflow: visible; }
+      .ring-wrap svg { width: 200px; height: 200px; }
+      .digits { font-size: 2.4rem; }
+      .dots-row { margin-top: 4px; }
       .controls { justify-content: center; }
       .mode-btns { flex-wrap: wrap; justify-content: center; }
       .btn-mode { min-width: 80px; flex: 0 1 auto; }
