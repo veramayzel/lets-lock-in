@@ -50,15 +50,25 @@
       cursor: pointer;
     }
     @keyframes float {
-      from { transform: translateY(0) rotate(var(--r1, -8deg)) scale(1); }
-      to   { transform: translateY(var(--ty, -18px)) rotate(var(--r2, 8deg)) scale(1.05); }
+      0%   { transform: translateY(0) rotate(var(--r1,-8deg)) scale(1); }
+      30%  { transform: translateY(calc(var(--ty,-20px) * .4)) rotate(calc(var(--r1,-8deg) * .5)) scale(1.04); }
+      60%  { transform: translateY(calc(var(--ty,-20px) * .85)) rotate(var(--r2,8deg)) scale(1.07); }
+      100% { transform: translateY(var(--ty,-20px)) rotate(var(--r2,8deg)) scale(1.05); }
     }
     @keyframes stkFly {
-      0%   { transform: translateY(0) rotate(var(--r1,-5deg)) scale(1); filter: drop-shadow(2px 3px 4px rgba(0,0,0,.18)); }
-      20%  { transform: translateY(-70px) rotate(25deg) scale(1.7); filter: drop-shadow(6px 10px 14px rgba(0,0,0,.28)); }
-      50%  { transform: translateY(-100px) rotate(-20deg) scale(1.5); }
-      75%  { transform: translateY(-60px) rotate(15deg) scale(1.6); }
-      100% { transform: translateY(0) rotate(var(--r1,-5deg)) scale(1); filter: drop-shadow(2px 3px 4px rgba(0,0,0,.18)); }
+      0%   { transform: translateY(0)      rotate(var(--r1,-5deg)) scale(1);   filter: drop-shadow(2px 3px 4px rgba(0,0,0,.18)); }
+      15%  { transform: translateY(-90px)  rotate(30deg)           scale(2);   filter: drop-shadow(8px 14px 18px rgba(0,0,0,.3)); }
+      35%  { transform: translateY(-130px) rotate(-25deg)          scale(1.7); }
+      55%  { transform: translateY(-80px)  rotate(20deg)           scale(1.9); }
+      75%  { transform: translateY(-110px) rotate(-10deg)          scale(1.6); }
+      90%  { transform: translateY(-30px)  rotate(8deg)            scale(1.2); }
+      100% { transform: translateY(0)      rotate(var(--r1,-5deg)) scale(1);   filter: drop-shadow(2px 3px 4px rgba(0,0,0,.18)); }
+    }
+    @keyframes stkPop {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(2.2) rotate(20deg); filter: drop-shadow(0 0 12px rgba(255,200,0,.8)); }
+      70%  { transform: scale(.85) rotate(-10deg); }
+      100% { transform: scale(1); }
     }
 
     /* ── main content ── */
@@ -717,37 +727,55 @@
 
   // ── stickers ──
   const STICKERS = [
-    { e:'🍅', sz:'2.2rem' }, { e:'⚡', sz:'2rem' }, { e:'🌟', sz:'1.8rem' },
-    { e:'💥', sz:'2rem' },   { e:'🔥', sz:'2rem' }, { e:'🏆', sz:'1.8rem' },
-    { e:'✨', sz:'1.6rem' }, { e:'💪', sz:'1.8rem' },{ e:'🎯', sz:'1.8rem' },
-    { e:'⏰', sz:'1.8rem' }, { e:'🚀', sz:'1.8rem' },{ e:'💫', sz:'1.6rem' },
-    { e:'🌈', sz:'1.8rem' }, { e:'🎪', sz:'1.8rem' },{ e:'🍒', sz:'1.6rem' },
-    { e:'⭐', sz:'1.6rem' }, { e:'🏅', sz:'1.8rem' },{ e:'🦋', sz:'1.8rem' },
+    { e:'🍅', sz:'2.4rem' }, { e:'⚡', sz:'2.2rem' }, { e:'🌟', sz:'2rem'  },
+    { e:'💥', sz:'2.2rem' }, { e:'🔥', sz:'2.2rem' }, { e:'🏆', sz:'2rem'  },
+    { e:'✨', sz:'1.8rem' }, { e:'💪', sz:'2rem'  },  { e:'🎯', sz:'2rem'  },
+    { e:'⏰', sz:'2rem'  },  { e:'🚀', sz:'2.2rem' }, { e:'💫', sz:'1.8rem' },
+    { e:'🌈', sz:'2rem'  },  { e:'🎪', sz:'2rem'  },  { e:'🍒', sz:'1.8rem' },
+    { e:'⭐', sz:'1.8rem' }, { e:'🏅', sz:'2rem'  },  { e:'🦋', sz:'2rem'  },
+    { e:'🌸', sz:'2rem'  },  { e:'🎀', sz:'1.8rem' }, { e:'🍭', sz:'2rem'  },
+    { e:'🌙', sz:'2rem'  },  { e:'🎵', sz:'1.8rem' }, { e:'🦄', sz:'2.2rem' },
+    { e:'🍀', sz:'1.8rem' }, { e:'🎈', sz:'2.2rem' }, { e:'💎', sz:'1.8rem' },
+    { e:'🌺', sz:'2rem'  },  { e:'🎲', sz:'1.8rem' }, { e:'🐝', sz:'1.8rem' },
+    { e:'🍋', sz:'1.8rem' }, { e:'🦊', sz:'2rem'  },  { e:'🌊', sz:'2rem'  },
+    { e:'🎸', sz:'2rem'  },  { e:'🍩', sz:'1.8rem' }, { e:'🪄', sz:'2rem'  },
   ];
   (function spawnStickers() {
     const c = document.getElementById('stickers');
     STICKERS.forEach(({ e, sz }) => {
       const d = document.createElement('div');
       d.className = 'stk'; d.textContent = e;
-      const lx = Math.random() * 92, ty = Math.random() * 90;
-      const dur = (4 + Math.random() * 5).toFixed(1);
-      const delay = (Math.random() * 6).toFixed(1);
-      const r1 = (Math.random() * 20 - 10).toFixed(1);
-      const r2 = (Math.random() * 20 - 10).toFixed(1);
-      const tyv = -(10 + Math.random() * 20).toFixed(0);
+      const lx = Math.random() * 93;
+      const ty = Math.random() * 92;
+      const dur = (5 + Math.random() * 6).toFixed(1);
+      const delay = (Math.random() * 8).toFixed(1);
+      const r1 = (Math.random() * 24 - 12).toFixed(1);
+      const r2 = (Math.random() * 24 - 12).toFixed(1);
+      const tyv = -(20 + Math.random() * 35).toFixed(0);
       const baseAnim = `float ${dur}s ${delay}s ease-in-out infinite alternate`;
       d.style.cssText = `left:${lx}%;top:${ty}%;--sz:${sz};--r1:${r1}deg;--r2:${r2}deg;--ty:${tyv}px;`;
       d.style.animation = baseAnim;
 
-      let flying = false;
+      let busy = false;
+
+      // hover → fly
       d.addEventListener('mouseenter', () => {
-        if (flying) return;
-        flying = true;
-        d.style.animation = 'stkFly 0.75s cubic-bezier(0.34, 1.56, 0.64, 1) forwards';
+        if (busy) return;
+        busy = true;
+        d.style.animation = 'stkFly 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards';
         d.style.zIndex = '50';
       });
+
+      // click → pop
+      d.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        d.style.animation = 'stkPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards';
+        d.style.zIndex = '50';
+        busy = true;
+      });
+
       d.addEventListener('animationend', () => {
-        flying = false;
+        busy = false;
         d.style.animation = baseAnim;
         d.style.zIndex = '';
       });
