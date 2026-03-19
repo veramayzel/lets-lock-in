@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Let's Lock In</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Fredoka:wght@500;600;700&family=Crete+Round:ital@0;1&family=Poppins:ital,wght@0,600;0,700;0,800;0,900;1,800;1,900&family=Caveat:wght@700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --yellow:  #FFE600;
+      --pink:    #FF3CA0;
+      --orange:  #FF6B35;
+      --lime:    #7CFF50;
+      --sky:     #00C2FF;
+      --purple:  #C855FF;
+    }
+
+    html, body {
+      width: 100%; min-height: 100vh;
+      font-family: 'Poppins', sans-serif;
+      overflow-x: hidden;
+    }
+
+    body {
+      background:
+        radial-gradient(ellipse 900px 280px at 15% 25%, rgba(255,255,255,.65) 0%, transparent 70%),
+        radial-gradient(ellipse 700px 200px at 80% 15%, rgba(255,255,255,.55) 0%, transparent 65%),
+        radial-gradient(ellipse 500px 160px at 55% 55%, rgba(255,255,255,.35) 0%, transparent 60%),
+        radial-gradient(ellipse 350px 120px at 30% 70%, rgba(255,255,255,.25) 0%, transparent 55%),
+        linear-gradient(175deg, #4A94C2 0%, #6BBAE0 35%, #9DD3EE 70%, #C8E9F7 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 24px 16px 40px;
+      position: relative;
+    }
+
+    /* ── floating stickers ── */
+    .stickers { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .stk {
+      position: absolute;
+      font-size: var(--sz, 2rem);
+      animation: float var(--dur, 6s) var(--delay, 0s) ease-in-out infinite alternate;
+      filter: drop-shadow(2px 3px 4px rgba(0,0,0,.18));
+      user-select: none;
+      pointer-events: auto;
+      cursor: pointer;
+    }
+    @keyframes float {
+      from { transform: translateY(0) rotate(var(--r1, -8deg)) scale(1); }
+      to   { transform: translateY(var(--ty, -18px)) rotate(var(--r2, 8deg)) scale(1.05); }
+    }
+    @keyframes stkFly {
+      0%   { transform: translateY(0) rotate(var(--r1,-5deg)) scale(1); filter: drop-shadow(2px 3px 4px rgba(0,0,0,.18)); }
+      20%  { transform: translateY(-70px) rotate(25deg) scale(1.7); filter: drop-shadow(6px 10px 14px rgba(0,0,0,.28)); }
+      50%  { transform: translateY(-100px) rotate(-20deg) scale(1.5); }
+      75%  { transform: translateY(-60px) rotate(15deg) scale(1.6); }
+      100% { transform: translateY(0) rotate(var(--r1,-5deg)) scale(1); filter: drop-shadow(2px 3px 4px rgba(0,0,0,.18)); }
+    }
+
+    /* ── main content ── */
+    .wrap {
+      position: relative; z-index: 10;
+      width: 580px; max-width: 96vw;
+      display: flex; flex-direction: column; align-items: center; gap: 14px;
+    }
+
+    /* ── header ── */
+    .hdr { text-align: center; margin-bottom: 2px; }
+    .hdr h1 {
+      font-family: 'Press Start 2P', monospace;
+      font-weight: 400;
+      font-size: clamp(1.6rem, 5.5vw, 3rem);
+      letter-spacing: .02em;
+      color: var(--yellow);
+      -webkit-text-stroke: 2px #000;
+      paint-order: stroke fill;
+      line-height: 1.2;
+      filter: drop-shadow(4px 5px 0 rgba(0,0,0,.22));
+      animation: titleBob 3s ease-in-out infinite;
+    }
+    @keyframes titleBob {
+      0%,100% { transform: rotate(-1deg); }
+      50%      { transform: rotate(1.5deg); }
+    }
+    .hdr .sub {
+      font-family: 'Crete Round', serif;
+      font-style: italic;
+      font-size: clamp(.9rem, 2.5vw, 1.15rem);
+      color: #fff;
+      text-shadow: 1px 2px 4px rgba(0,0,0,.3);
+      margin-top: 8px;
+    }
+
+    /* ── two-column layout ── */
+    .main-row {
+      display: flex; gap: 14px; width: 100%; align-items: flex-start;
+    }
+    .left-col { flex: 1; display: flex; flex-direction: column; gap: 14px; }
+    .right-col { width: 200px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px; }
+
+    /* ── main card ── */
+    .card {
+      width: 100%;
+      background: rgba(255,255,255,.82);
+      backdrop-filter: blur(12px);
+      border-radius: 28px;
+      border: 3px solid rgba(255,255,255,.9);
+      box-shadow: 0 12px 40px rgba(0,100,180,.25), 0 2px 0 rgba(255,255,255,.8) inset;
+      padding: 20px 24px 18px;
+    }
+
+    /* ── phase badge ── */
+    .phase-row {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 10px;
+    }
+    .phase-badge {
+      font-family: 'Fredoka', sans-serif;
+      font-size: .78rem; font-weight: 600; letter-spacing: .06em;
+      text-transform: uppercase;
+      padding: 5px 16px; border-radius: 50px;
+      transition: all .4s;
+    }
+    .phase-badge.work  { background: var(--lime);   color: #1a5500; box-shadow: 0 3px 0 rgba(0,0,0,.15); }
+    .phase-badge.short { background: var(--sky);    color: #003a5e; box-shadow: 0 3px 0 rgba(0,0,0,.15); }
+    .phase-badge.long  { background: var(--purple); color: #fff;   box-shadow: 0 3px 0 rgba(0,0,0,.2); }
+    .sess-info {
+      font-family: 'Fredoka', sans-serif;
+      font-size: .72rem; font-weight: 600; color: #666;
+    }
+
+    /* ── ring ── */
+    .ring-wrap {
+      display: flex; justify-content: center; align-items: center;
+      position: relative; margin: 0 auto 8px;
+      width: 270px; height: 270px;
+    }
+    .ring-wrap svg { transform: rotate(-90deg); position: absolute; inset: 0; }
+    .ring-bg   { fill: none; stroke: rgba(0,0,0,.07); stroke-width: 11; }
+    .ring-prog {
+      fill: none; stroke: url(#ringGrad); stroke-width: 11; stroke-linecap: round;
+      stroke-dasharray: 722.57; stroke-dashoffset: 0;
+      transition: stroke-dashoffset 1s linear;
+    }
+    .timer-inner {
+      position: absolute; text-align: center;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .digits {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: clamp(2.8rem, 8vw, 3.6rem);
+      letter-spacing: .04em; line-height: 1;
+      color: #1a1a1a;
+      transition: color .4s;
+    }
+    .digits.break { color: #0062CC; }
+    .phase-mini {
+      font-family: 'Caveat', cursive;
+      font-size: 1rem; font-weight: 700;
+      color: #999; margin-top: 2px;
+    }
+    .colon { animation: blink 1s step-end infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* ── cycle dots ── */
+    .dots-row { display: flex; justify-content: center; gap: 10px; margin: 4px 0 12px; }
+    .dot {
+      width: 13px; height: 13px; border-radius: 50%;
+      border: 2.5px solid #ccc; background: transparent;
+      transition: all .3s;
+    }
+    .dot.on { background: var(--orange); border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255,107,53,.2); }
+
+    /* ── progress bar ── */
+    .bar-sec { margin-bottom: 2px; }
+    .bar-head {
+      display: flex; justify-content: space-between;
+      font-family: 'Fredoka', sans-serif;
+      font-size: .7rem; font-weight: 600; color: #999;
+      text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px;
+    }
+    .bar-track {
+      height: 10px; background: rgba(0,0,0,.08);
+      border-radius: 50px; overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--lime) 0%, var(--sky) 50%, var(--pink) 100%);
+      border-radius: 50px;
+      transition: width 1s linear;
+      box-shadow: 0 2px 6px rgba(0,180,255,.3);
+    }
+
+    /* ── controls ── */
+    .controls { display: flex; gap: 10px; justify-content: center; width: 100%; }
+    .btn {
+      font-family: 'Fredoka', sans-serif; font-weight: 700;
+      font-size: .85rem; letter-spacing: .06em; text-transform: uppercase;
+      padding: 12px 26px; border: none; border-radius: 50px;
+      cursor: pointer; transition: all .15s;
+      box-shadow: 0 5px 0 rgba(0,0,0,.2);
+    }
+    .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,.2); }
+    .btn-start { background: var(--lime); color: #1a5500; }
+    .btn-start:hover { background: #90ff68; transform: translateY(-2px); box-shadow: 0 7px 0 rgba(0,0,0,.2); }
+    .btn-start.paused { background: var(--pink); color: #fff; }
+    .btn-start.paused:hover { background: #ff5ab3; }
+    .btn-skip { background: var(--sky); color: #003a5e; }
+    .btn-skip:hover { background: #33ceff; transform: translateY(-2px); box-shadow: 0 7px 0 rgba(0,0,0,.2); }
+    .btn-reset { background: rgba(0,0,0,.1); color: #555; }
+    .btn-reset:hover { background: rgba(0,0,0,.15); transform: translateY(-2px); box-shadow: 0 7px 0 rgba(0,0,0,.15); }
+
+    /* ── mode panel ── */
+    .mode-wrap { width: 100%; }
+    .mode-lbl {
+      font-family: 'Crete Round', serif;
+      font-style: italic;
+      font-size: 1.05rem; color: #fff;
+      text-align: center; margin-bottom: 10px;
+      text-shadow: 1px 2px 4px rgba(0,0,0,.25);
+    }
+    .mode-btns { display: flex; gap: 7px; }
+    .btn-mode {
+      flex: 1; font-family: 'Fredoka', sans-serif; font-weight: 700;
+      font-size: .6rem; letter-spacing: .04em; text-transform: uppercase;
+      padding: 11px 4px; border: none; border-radius: 16px;
+      cursor: pointer; text-align: center;
+      box-shadow: 0 5px 0 rgba(0,0,0,.18);
+      transition: all .15s;
+    }
+    .btn-mode:not(.sel) { filter: brightness(.82) saturate(.65); }
+    .btn-mode:hover { filter: brightness(1) saturate(1); transform: translateY(-2px) rotate(.5deg); box-shadow: 0 7px 0 rgba(0,0,0,.18); }
+    .btn-mode:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,.18); }
+    .btn-mode.sel { transform: translateY(-3px) rotate(-1.5deg) scale(1.06); box-shadow: 0 8px 0 rgba(0,0,0,.22); filter: brightness(1) saturate(1); }
+    .mn { display: block; margin-bottom: 4px; font-size: .58rem; line-height: 1.1; }
+    .mh { display: block; font-size: .78rem; }
+    .m0 { background: var(--lime);   color: #1a5500; }
+    .m1 { background: var(--sky);    color: #003a5e; }
+    .m2 { background: var(--orange); color: #fff; }
+    .m3 { background: var(--pink);   color: #fff; }
+    .m4 { background: var(--yellow); color: #5a3500; }
+
+    /* ── task list card ── */
+    .task-card {
+      width: 100%;
+      background: rgba(255,255,255,.82);
+      backdrop-filter: blur(12px);
+      border-radius: 24px;
+      border: 3px solid rgba(255,255,255,.9);
+      box-shadow: 0 12px 40px rgba(0,100,180,.25), 0 2px 0 rgba(255,255,255,.8) inset;
+      padding: 18px 18px 14px;
+    }
+    .task-title {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700; font-size: 1rem; color: #333;
+      margin-bottom: 12px; letter-spacing: .02em;
+    }
+    .task-title span { font-size: .8em; margin-right: 4px; }
+
+    .task-input-row {
+      display: flex; gap: 7px; margin-bottom: 12px;
+    }
+    .task-input {
+      flex: 1; font-family: 'Fredoka', sans-serif; font-size: .8rem;
+      padding: 8px 12px; border-radius: 50px;
+      border: 2px solid rgba(0,0,0,.1);
+      background: rgba(255,255,255,.7);
+      outline: none; transition: border-color .2s;
+      color: #333;
+    }
+    .task-input::placeholder { color: #bbb; }
+    .task-input:focus { border-color: var(--sky); }
+    .task-add-btn {
+      font-family: 'Fredoka', sans-serif; font-weight: 700;
+      font-size: .8rem; padding: 8px 14px;
+      background: var(--sky); color: #003a5e;
+      border: none; border-radius: 50px; cursor: pointer;
+      box-shadow: 0 3px 0 rgba(0,0,0,.15);
+      transition: all .15s; white-space: nowrap;
+    }
+    .task-add-btn:hover { background: #33ceff; transform: translateY(-1px); }
+    .task-add-btn:active { transform: translateY(2px); box-shadow: none; }
+
+    .task-list { display: flex; flex-direction: column; gap: 7px; }
+    .task-item {
+      display: flex; align-items: center; gap: 9px;
+      padding: 8px 10px; border-radius: 14px;
+      background: rgba(255,255,255,.6);
+      border: 1.5px solid rgba(0,0,0,.06);
+      transition: all .2s; cursor: pointer;
+      group: task;
+    }
+    .task-item:hover { background: rgba(255,255,255,.9); border-color: rgba(0,0,0,.1); }
+    .task-item.done { background: rgba(0,0,0,.04); }
+    .task-check {
+      width: 20px; height: 20px; border-radius: 50%;
+      border: 2px solid #ccc; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .25s; font-size: .7rem;
+    }
+    .task-item.done .task-check {
+      background: var(--lime); border-color: var(--lime);
+      box-shadow: 0 0 0 3px rgba(124,255,80,.2);
+    }
+    .task-text {
+      font-family: 'Fredoka', sans-serif;
+      font-size: .8rem; font-weight: 500; color: #333;
+      flex: 1; line-height: 1.3;
+      transition: all .25s; word-break: break-word;
+    }
+    .task-item.done .task-text {
+      text-decoration: line-through; color: #aaa;
+    }
+    .task-del {
+      font-size: .7rem; opacity: 0; transition: opacity .2s;
+      background: none; border: none; cursor: pointer;
+      color: #ccc; padding: 2px 4px; border-radius: 6px;
+      flex-shrink: 0;
+    }
+    .task-del:hover { color: var(--pink); background: rgba(255,60,160,.1); }
+    .task-item:hover .task-del { opacity: 1; }
+
+    .task-empty {
+      font-family: 'Caveat', cursive; font-weight: 700;
+      font-size: .9rem; color: #ccc; text-align: center;
+      padding: 10px 0;
+    }
+
+    /* ── status ── */
+    .status {
+      font-family: 'Fredoka', sans-serif;
+      font-size: .62rem; font-weight: 600; letter-spacing: .1em;
+      color: rgba(255,255,255,.7); text-transform: uppercase;
+      display: flex; justify-content: space-between; width: 100%;
+      text-shadow: 0 1px 3px rgba(0,0,0,.2);
+    }
+
+    /* ── notification toast ── */
+    #notif {
+      position: fixed; top: 18px; left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      font-family: 'Fredoka', sans-serif; font-weight: 700;
+      font-size: 1.05rem;
+      background: #fff; border-radius: 50px;
+      padding: 10px 28px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.2), 0 0 0 3px var(--yellow);
+      color: #222; z-index: 9999;
+      transition: transform .5s cubic-bezier(.175,.885,.32,1.275);
+      white-space: nowrap;
+    }
+    #notif.show { transform: translateX(-50%) translateY(0); }
+
+    /* ── done overlay ── */
+    #done {
+      display: none; position: fixed; inset: 0;
+      background: rgba(91,168,212,.92); backdrop-filter: blur(10px);
+      z-index: 8000;
+      align-items: center; justify-content: center; flex-direction: column;
+      gap: 16px; text-align: center; padding: 20px;
+    }
+    #done.show { display: flex; }
+    .done-emoji { font-size: 5rem; animation: bounce 1s ease infinite alternate; }
+    @keyframes bounce { from{transform:scale(1) rotate(-5deg)} to{transform:scale(1.2) rotate(5deg)} }
+    .done-title {
+      font-family: 'Fredoka', sans-serif; font-weight: 700;
+      font-size: clamp(2.6rem, 9vw, 4.5rem);
+      color: var(--yellow); letter-spacing: .06em;
+      -webkit-text-stroke: 3px #000;
+      paint-order: stroke fill;
+      filter: drop-shadow(4px 5px 0 rgba(0,0,0,.2));
+    }
+    .done-sub {
+      font-family: 'Caveat', cursive; font-weight: 700;
+      font-size: 1.2rem; color: #fff;
+      text-shadow: 0 2px 4px rgba(0,0,0,.3);
+    }
+    .done-btn {
+      font-family: 'Fredoka', sans-serif; font-weight: 700;
+      font-size: .9rem; letter-spacing: .06em;
+      padding: 14px 40px; background: var(--yellow);
+      color: #5a3500; border: none; border-radius: 50px;
+      cursor: pointer; text-transform: uppercase;
+      box-shadow: 0 6px 0 rgba(0,0,0,.2);
+      transition: all .2s;
+    }
+    .done-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 0 rgba(0,0,0,.2); }
+
+    /* ── ig handle ── */
+    .ig-handle {
+      font-family: 'Crete Round', serif;
+      font-style: italic;
+      font-size: .7rem;
+      color: rgba(255,255,255,.75);
+      text-decoration: none;
+      text-shadow: 0 1px 3px rgba(0,0,0,.2);
+      transition: color .2s;
+    }
+    .ig-handle:hover { color: #fff; }
+
+    /* ── responsive: stack on small screens ── */
+    @media (max-width: 560px) {
+      .main-row { flex-direction: column; }
+      .right-col { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="stickers" id="stickers"></div>
+<div id="notif">🍅 Break time!</div>
+
+<div id="done">
+  <div class="done-emoji" id="doneEmoji">🏆</div>
+  <div class="done-title" id="doneTitle">MISSION COMPLETE</div>
+  <div class="done-sub"   id="doneSub">Session finished</div>
+  <button class="done-btn" onclick="newSession()">New Session →</button>
+</div>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#FFE600"/>
+      <stop offset="50%"  stop-color="#FF3CA0"/>
+      <stop offset="100%" stop-color="#00C2FF"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<div class="wrap">
+
+  <div class="hdr">
+    <h1>Let's Lock In</h1>
+    <div class="sub">your focus companion ✨</div>
+  </div>
+
+  <div class="main-row">
+
+    <!-- LEFT: timer + controls + modes -->
+    <div class="left-col">
+
+      <div class="card">
+        <div class="phase-row">
+          <div class="phase-badge work" id="phaseBadge">🍅 Focus</div>
+          <div class="sess-info" id="sessInfo">Session 0 / 0</div>
+        </div>
+
+        <div class="ring-wrap">
+          <svg width="270" height="270" viewBox="0 0 270 270">
+            <circle class="ring-bg"   cx="135" cy="135" r="115"/>
+            <circle class="ring-prog" cx="135" cy="135" r="115" id="ring"/>
+          </svg>
+          <div class="timer-inner">
+            <div class="digits" id="digits">
+              <span id="mm">25</span><span class="colon">:</span><span id="ss">00</span>
+            </div>
+            <div class="phase-mini" id="phaseMini">deep work</div>
+          </div>
+        </div>
+
+        <div class="dots-row" id="dots">
+          <div class="dot" data-i="0"></div>
+          <div class="dot" data-i="1"></div>
+          <div class="dot" data-i="2"></div>
+          <div class="dot" data-i="3"></div>
+        </div>
+
+        <div class="bar-sec">
+          <div class="bar-head">
+            <span>Total Progress</span>
+            <span id="pct">0.0%</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill" id="barFill" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="btn btn-start" id="btnStart" onclick="toggle()">▶ Start</button>
+        <button class="btn btn-skip"  onclick="skip()">⏭ Skip</button>
+        <button class="btn btn-reset" onclick="reset()">↺ Reset</button>
+      </div>
+
+      <div class="mode-wrap">
+        <div class="mode-lbl">pick your mission 👇</div>
+        <div class="mode-btns">
+          <button class="btn-mode m0 sel" data-h="8"  onclick="setMode(this)"><span class="mn">BASIC</span><span class="mh">8H</span></button>
+          <button class="btn-mode m1"     data-h="10" onclick="setMode(this)"><span class="mn">ADVANCED</span><span class="mh">10H</span></button>
+          <button class="btn-mode m2"     data-h="12" onclick="setMode(this)"><span class="mn">LOCKED IN</span><span class="mh">12H</span></button>
+          <button class="btn-mode m3"     data-h="14" onclick="setMode(this)"><span class="mn">HERO</span><span class="mh">14H</span></button>
+          <button class="btn-mode m4"     data-h="16" onclick="setMode(this)"><span class="mn">G.O.A.T</span><span class="mh">16H</span></button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: task list -->
+    <div class="right-col">
+      <div class="task-card">
+        <div class="task-title"><span>📋</span> Today's Tasks</div>
+        <div class="task-input-row">
+          <input class="task-input" id="taskInput" type="text" placeholder="Add a task..." maxlength="80"
+            onkeydown="if(event.key==='Enter') addTask()">
+          <button class="task-add-btn" onclick="addTask()">+ Add</button>
+        </div>
+        <div class="task-list" id="taskList">
+          <div class="task-empty" id="taskEmpty">No tasks yet 🌤️</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="status">
+    <span id="statusL">System ready</span>
+    <span id="statusT">Elapsed: 00:00:00</span>
+    <a href="https://instagram.com/vera.mayzel" target="_blank" class="ig-handle">📸 @vera.mayzel</a>
+  </div>
+
+</div>
+
+<script>
+  // ── timer constants ──
+  const WORK = 25 * 60, SB = 5 * 60, LB = 15 * 60, CIRC = 722.57;
+
+  // ── timer state ──
+  let hours = 8, secs = WORK, pDur = WORK;
+  let phase = 'work', cyclePos = 0, totalDone = 0;
+  let workSecs = 0, elapsedSecs = 0;
+  let running = false, tid = null;
+
+  function totalTarget() { return Math.ceil(hours * 60 / 25); }
+
+  function toggle() { running ? pause() : start(); }
+
+  function start() {
+    running = true;
+    const b = document.getElementById('btnStart');
+    b.textContent = '⏸ Pause'; b.classList.add('paused');
+    setStatus(phase === 'work' ? 'Focus mode active 🔥' : 'Break in progress ☕');
+    tid = setInterval(tick, 1000);
+  }
+
+  function pause() {
+    running = false; clearInterval(tid);
+    const b = document.getElementById('btnStart');
+    b.textContent = '▶ Resume'; b.classList.remove('paused');
+    setStatus('Paused ⏸');
+  }
+
+  function tick() {
+    secs--; elapsedSecs++;
+    if (phase === 'work') workSecs++;
+    render();
+    if (secs <= 0) nextPhase();
+  }
+
+  function skip() {
+    if (!running) return;
+    clearInterval(tid); running = false; secs = 0; nextPhase();
+  }
+
+  function reset() {
+    clearInterval(tid); running = false;
+    secs = WORK; pDur = WORK; phase = 'work';
+    cyclePos = 0; totalDone = 0; workSecs = 0; elapsedSecs = 0;
+    const b = document.getElementById('btnStart');
+    b.textContent = '▶ Start'; b.classList.remove('paused');
+    setStatus('System ready');
+    render(); updatePhaseUI();
+  }
+
+  function nextPhase() {
+    if (phase === 'work') {
+      totalDone++; cyclePos++;
+      if (workSecs >= hours * 3600) { showDone(); return; }
+      if (cyclePos >= 4) {
+        phase = 'long'; pDur = LB; cyclePos = 0;
+        notify('☕ Long break — 15 min!');
+      } else {
+        phase = 'short'; pDur = SB;
+        notify('🌿 Short break — 5 min!');
+      }
+    } else {
+      phase = 'work'; pDur = WORK;
+      notify('🍅 Focus time — 25 min!');
+    }
+    secs = pDur; updatePhaseUI(); render(); start();
+  }
+
+  function setMode(btn) {
+    if (running) return;
+    document.querySelectorAll('.btn-mode').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    hours = parseInt(btn.dataset.h);
+    reset();
+  }
+
+  function render() {
+    document.getElementById('mm').textContent = p2(Math.floor(secs / 60));
+    document.getElementById('ss').textContent = p2(secs % 60);
+    document.getElementById('ring').style.strokeDashoffset = CIRC * (1 - secs / pDur);
+    const pv = Math.min(100, (workSecs / (hours * 3600)) * 100);
+    document.getElementById('barFill').style.width = pv.toFixed(1) + '%';
+    document.getElementById('pct').textContent = pv.toFixed(1) + '%';
+    document.getElementById('sessInfo').textContent = `Session ${totalDone} / ${totalTarget()}`;
+    document.querySelectorAll('#dots .dot').forEach(d =>
+      d.classList.toggle('on', parseInt(d.dataset.i) < cyclePos));
+    const eh = Math.floor(elapsedSecs / 3600), em = Math.floor((elapsedSecs % 3600) / 60), es = elapsedSecs % 60;
+    document.getElementById('statusT').textContent = `Elapsed: ${p2(eh)}:${p2(em)}:${p2(es)}`;
+  }
+
+  function updatePhaseUI() {
+    const badge = document.getElementById('phaseBadge');
+    const digits = document.getElementById('digits');
+    const mini = document.getElementById('phaseMini');
+    digits.classList.remove('break');
+    if (phase === 'work') {
+      badge.className = 'phase-badge work'; badge.textContent = '🍅 Focus';
+      mini.textContent = 'deep work';
+    } else if (phase === 'short') {
+      badge.className = 'phase-badge short'; badge.textContent = '🌿 Short Break';
+      mini.textContent = '5 min rest'; digits.classList.add('break');
+    } else {
+      badge.className = 'phase-badge long'; badge.textContent = '💜 Long Break';
+      mini.textContent = '15 min recharge'; digits.classList.add('break');
+    }
+  }
+
+  function setStatus(t) { document.getElementById('statusL').textContent = t; }
+
+  let ntid;
+  function notify(msg) {
+    const el = document.getElementById('notif');
+    el.textContent = msg; el.classList.add('show');
+    clearTimeout(ntid); ntid = setTimeout(() => el.classList.remove('show'), 3000);
+  }
+
+  function showDone() {
+    clearInterval(tid); running = false;
+    const emojis = { 8:'✅', 10:'⚡', 12:'🔒', 14:'🦸', 16:'🐐' };
+    const titles = { 8:'BASIC COMPLETE', 10:'ADVANCED CLEARED', 12:'LOCKED IN!', 14:'HERO STATUS', 16:'G.O.A.T UNLOCKED' };
+    document.getElementById('doneEmoji').textContent = emojis[hours] || '🏆';
+    document.getElementById('doneTitle').textContent = titles[hours] || 'MISSION COMPLETE';
+    document.getElementById('doneSub').textContent = `${hours}h session done · ${totalDone} pomodoros logged`;
+    document.getElementById('done').classList.add('show');
+  }
+
+  function newSession() {
+    document.getElementById('done').classList.remove('show'); reset();
+  }
+
+  // ── task list ──
+  let tasks = [];
+
+  function addTask() {
+    const input = document.getElementById('taskInput');
+    const text = input.value.trim();
+    if (!text) return;
+    tasks.push({ text, done: false, id: Date.now() });
+    input.value = '';
+    renderTasks();
+  }
+
+  function toggleTask(id) {
+    const t = tasks.find(t => t.id === id);
+    if (t) { t.done = !t.done; renderTasks(); }
+  }
+
+  function deleteTask(id) {
+    tasks = tasks.filter(t => t.id !== id);
+    renderTasks();
+  }
+
+  function renderTasks() {
+    const list = document.getElementById('taskList');
+    const empty = document.getElementById('taskEmpty');
+    if (tasks.length === 0) {
+      empty.style.display = '';
+      // remove all task items
+      list.querySelectorAll('.task-item').forEach(el => el.remove());
+      return;
+    }
+    empty.style.display = 'none';
+    list.querySelectorAll('.task-item').forEach(el => el.remove());
+    tasks.forEach(task => {
+      const item = document.createElement('div');
+      item.className = 'task-item' + (task.done ? ' done' : '');
+      item.dataset.id = task.id;
+
+      const check = document.createElement('div');
+      check.className = 'task-check';
+      check.textContent = task.done ? '✓' : '';
+      check.onclick = () => toggleTask(task.id);
+
+      const txt = document.createElement('div');
+      txt.className = 'task-text';
+      txt.textContent = task.text;
+      txt.onclick = () => toggleTask(task.id);
+
+      const del = document.createElement('button');
+      del.className = 'task-del';
+      del.textContent = '✕';
+      del.onclick = (e) => { e.stopPropagation(); deleteTask(task.id); };
+
+      item.appendChild(check);
+      item.appendChild(txt);
+      item.appendChild(del);
+      list.appendChild(item);
+    });
+  }
+
+  // ── stickers ──
+  const STICKERS = [
+    { e:'🍅', sz:'2.2rem' }, { e:'⚡', sz:'2rem' }, { e:'🌟', sz:'1.8rem' },
+    { e:'💥', sz:'2rem' },   { e:'🔥', sz:'2rem' }, { e:'🏆', sz:'1.8rem' },
+    { e:'✨', sz:'1.6rem' }, { e:'💪', sz:'1.8rem' },{ e:'🎯', sz:'1.8rem' },
+    { e:'⏰', sz:'1.8rem' }, { e:'🚀', sz:'1.8rem' },{ e:'💫', sz:'1.6rem' },
+    { e:'🌈', sz:'1.8rem' }, { e:'🎪', sz:'1.8rem' },{ e:'🍒', sz:'1.6rem' },
+    { e:'⭐', sz:'1.6rem' }, { e:'🏅', sz:'1.8rem' },{ e:'🦋', sz:'1.8rem' },
+  ];
+  (function spawnStickers() {
+    const c = document.getElementById('stickers');
+    STICKERS.forEach(({ e, sz }) => {
+      const d = document.createElement('div');
+      d.className = 'stk'; d.textContent = e;
+      const lx = Math.random() * 92, ty = Math.random() * 90;
+      const dur = (4 + Math.random() * 5).toFixed(1);
+      const delay = (Math.random() * 6).toFixed(1);
+      const r1 = (Math.random() * 20 - 10).toFixed(1);
+      const r2 = (Math.random() * 20 - 10).toFixed(1);
+      const tyv = -(10 + Math.random() * 20).toFixed(0);
+      const baseAnim = `float ${dur}s ${delay}s ease-in-out infinite alternate`;
+      d.style.cssText = `left:${lx}%;top:${ty}%;--sz:${sz};--r1:${r1}deg;--r2:${r2}deg;--ty:${tyv}px;`;
+      d.style.animation = baseAnim;
+
+      let flying = false;
+      d.addEventListener('mouseenter', () => {
+        if (flying) return;
+        flying = true;
+        d.style.animation = 'stkFly 0.75s cubic-bezier(0.34, 1.56, 0.64, 1) forwards';
+        d.style.zIndex = '50';
+      });
+      d.addEventListener('animationend', () => {
+        flying = false;
+        d.style.animation = baseAnim;
+        d.style.zIndex = '';
+      });
+
+      c.appendChild(d);
+    });
+  })();
+
+  function p2(n) { return String(n).padStart(2, '0'); }
+
+  render();
+  renderTasks();
+</script>
+</body>
+</html>
