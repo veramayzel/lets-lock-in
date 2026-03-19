@@ -393,8 +393,17 @@
 
     /* ── responsive: stack on small screens ── */
     @media (max-width: 560px) {
-      .main-row { flex-direction: column; }
+      .main-row { flex-direction: column; align-items: center; }
       .right-col { width: 100%; }
+      .left-col { width: 100%; align-items: center; }
+      .card { padding: 16px 16px 14px; text-align: center; }
+      .phase-row { justify-content: center; gap: 12px; }
+      .ring-wrap { width: 220px; height: 220px; transform: scale(0.72); transform-origin: center top; margin-bottom: -52px; }
+      .digits { font-size: 2.6rem; }
+      .dots-row { margin-top: 0; }
+      .controls { justify-content: center; }
+      .mode-btns { flex-wrap: wrap; justify-content: center; }
+      .btn-mode { min-width: 80px; flex: 0 1 auto; }
     }
   </style>
 </head>
