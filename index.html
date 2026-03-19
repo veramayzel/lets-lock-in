@@ -50,10 +50,11 @@
       cursor: pointer;
     }
     @keyframes float {
-      0%   { transform: translateY(0) rotate(var(--r1,-8deg)) scale(1); }
-      30%  { transform: translateY(calc(var(--ty,-20px) * .4)) rotate(calc(var(--r1,-8deg) * .5)) scale(1.04); }
-      60%  { transform: translateY(calc(var(--ty,-20px) * .85)) rotate(var(--r2,8deg)) scale(1.07); }
-      100% { transform: translateY(var(--ty,-20px)) rotate(var(--r2,8deg)) scale(1.05); }
+      0%   { transform: translateY(0px)              rotate(var(--r1,-8deg)) scale(1); }
+      25%  { transform: translateY(calc(var(--ty,-28px) * .3))  rotate(calc((var(--r1,-8deg) + var(--r2,8deg)) / 2)) scale(1.02); }
+      50%  { transform: translateY(var(--ty,-28px))  rotate(var(--r2,8deg)) scale(1.05); }
+      75%  { transform: translateY(calc(var(--ty,-28px) * .6))  rotate(calc((var(--r1,-8deg) + var(--r2,8deg)) / 2)) scale(1.03); }
+      100% { transform: translateY(0px)              rotate(var(--r1,-8deg)) scale(1); }
     }
     @keyframes stkFly {
       0%   { transform: translateY(0)      rotate(var(--r1,-5deg)) scale(1);   filter: drop-shadow(2px 3px 4px rgba(0,0,0,.18)); }
@@ -747,12 +748,12 @@
       d.className = 'stk'; d.textContent = e;
       const lx = Math.random() * 93;
       const ty = Math.random() * 92;
-      const dur = (5 + Math.random() * 6).toFixed(1);
+      const dur = (7 + Math.random() * 7).toFixed(1);
       const delay = (Math.random() * 8).toFixed(1);
-      const r1 = (Math.random() * 24 - 12).toFixed(1);
-      const r2 = (Math.random() * 24 - 12).toFixed(1);
-      const tyv = -(20 + Math.random() * 35).toFixed(0);
-      const baseAnim = `float ${dur}s ${delay}s ease-in-out infinite alternate`;
+      const r1 = (Math.random() * 18 - 9).toFixed(1);
+      const r2 = (Math.random() * 18 - 9).toFixed(1);
+      const tyv = -(22 + Math.random() * 32).toFixed(0);
+      const baseAnim = `float ${dur}s ${delay}s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite`;
       d.style.cssText = `left:${lx}%;top:${ty}%;--sz:${sz};--r1:${r1}deg;--r2:${r2}deg;--ty:${tyv}px;`;
       d.style.animation = baseAnim;
 
