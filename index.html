@@ -536,19 +536,31 @@
   let workSecs = 0, elapsedSecs = 0;
   let running = false, tid = null;
 
-  function totalTarget() { return Math.ceil(hours * 60 / 25); }
+  // timestamp-based tracking (keeps timer accurate when screen locks)
+  let phaseStartTime = null;   // Date.now() when current phase began
+  let workSecsBase = 0;        // work seconds accumulated before current phase
+  let elapsedSecsBase = 0;     // total seconds accumulated before current phase
 
+  function totalTarget() { return Math.ceil(hours * 60 / 25); }
   function toggle() { running ? pause() : start(); }
 
   function start() {
     running = true;
+    phaseStartTime = Date.now();
     const b = document.getElementById('btnStart');
     b.textContent = '⏸ Pause'; b.classList.add('paused');
     setStatus(phase === 'work' ? 'Focus mode active 🔥' : 'Break in progress ☕');
-    tid = setInterval(tick, 1000);
+    tid = setInterval(tick, 500);
   }
 
   function pause() {
+    // save accumulated time before pausing
+    if (phaseStartTime) {
+      const e = Math.floor((Date.now() - phaseStartTime) / 1000);
+      elapsedSecsBase += e;
+      if (phase === 'work') workSecsBase += e;
+      phaseStartTime = null;
+    }
     running = false; clearInterval(tid);
     const b = document.getElementById('btnStart');
     b.textContent = '▶ Resume'; b.classList.remove('paused');
@@ -556,21 +568,27 @@
   }
 
   function tick() {
-    secs--; elapsedSecs++;
-    if (phase === 'work') workSecs++;
+    if (!phaseStartTime) return;
+    const phaseElapsed = Math.floor((Date.now() - phaseStartTime) / 1000);
+    secs = Math.max(0, pDur - phaseElapsed);
+    elapsedSecs = elapsedSecsBase + phaseElapsed;
+    workSecs = workSecsBase + (phase === 'work' ? phaseElapsed : 0);
     render();
     if (secs <= 0) nextPhase();
   }
 
   function skip() {
     if (!running) return;
-    clearInterval(tid); running = false; secs = 0; nextPhase();
+    clearInterval(tid); running = false;
+    phaseStartTime = null;
+    secs = 0; nextPhase();
   }
 
   function reset() {
     clearInterval(tid); running = false;
     secs = WORK; pDur = WORK; phase = 'work';
     cyclePos = 0; totalDone = 0; workSecs = 0; elapsedSecs = 0;
+    phaseStartTime = null; workSecsBase = 0; elapsedSecsBase = 0;
     const b = document.getElementById('btnStart');
     b.textContent = '▶ Start'; b.classList.remove('paused');
     setStatus('System ready');
@@ -578,9 +596,15 @@
   }
 
   function nextPhase() {
+    clearInterval(tid); running = false;
+    // save base counters for completed phase
+    elapsedSecsBase += pDur;
+    if (phase === 'work') workSecsBase += pDur;
+    phaseStartTime = null;
+
     if (phase === 'work') {
       totalDone++; cyclePos++;
-      if (workSecs >= hours * 3600) { showDone(); return; }
+      if (workSecsBase >= hours * 3600) { workSecs = workSecsBase; showDone(); return; }
       if (cyclePos >= 4) {
         phase = 'long'; pDur = LB; cyclePos = 0;
         notify('☕ Long break — 15 min!');
@@ -594,6 +618,11 @@
     }
     secs = pDur; updatePhaseUI(); render(); start();
   }
+
+  // resync immediately when screen unlocks
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && running) tick();
+  });
 
   function setMode(btn) {
     if (running) return;
