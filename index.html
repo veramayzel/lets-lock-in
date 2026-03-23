@@ -213,6 +213,8 @@
     .btn-skip:hover { background: #33ceff; transform: translateY(-2px); box-shadow: 0 7px 0 rgba(0,0,0,.2); }
     .btn-reset { background: rgba(0,0,0,.1); color: #555; }
     .btn-reset:hover { background: rgba(0,0,0,.15); transform: translateY(-2px); box-shadow: 0 7px 0 rgba(0,0,0,.15); }
+    .btn-mute { background: rgba(0,0,0,.1); color: #555; min-width: unset; padding: 0 14px; }
+    .btn-mute:hover { background: rgba(0,0,0,.15); transform: translateY(-2px); box-shadow: 0 7px 0 rgba(0,0,0,.15); }
 
     /* ── mode panel ── */
     .mode-wrap { width: 100%; }
@@ -493,6 +495,7 @@
         <button class="btn btn-start" id="btnStart" onclick="toggle()">▶ Start</button>
         <button class="btn btn-skip"  onclick="skip()">⏭ Skip</button>
         <button class="btn btn-reset" onclick="reset()">↺ Reset</button>
+        <button class="btn btn-mute"  id="btnMute" onclick="toggleMute()">🔔</button>
       </div>
 
       <div class="mode-wrap">
@@ -602,8 +605,37 @@
     render(); updatePhaseUI();
   }
 
+  let muted = false;
+  function toggleMute() {
+    muted = !muted;
+    document.getElementById('btnMute').textContent = muted ? '🔇' : '🔔';
+  }
+
+  function playChime() {
+    if (muted) return;
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const notes = phase === 'work'
+        ? [523.25, 659.25, 783.99]   // C5 E5 G5 — upbeat for break
+        : [783.99, 659.25, 523.25];  // G5 E5 C5 — settling for focus
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        const t = ctx.currentTime + i * 0.18;
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.35, t + 0.04);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+        osc.start(t); osc.stop(t + 0.5);
+      });
+    } catch (e) {}
+  }
+
   function nextPhase() {
     clearInterval(tid); running = false;
+    playChime();
     // save base counters for completed phase
     elapsedSecsBase += pDur;
     if (phase === 'work') workSecsBase += pDur;
