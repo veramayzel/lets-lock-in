@@ -561,6 +561,7 @@
     b.textContent = '⏸ Pause'; b.classList.add('paused');
     setStatus(phase === 'work' ? 'Focus mode active 🔥' : 'Break in progress ☕');
     tid = setInterval(tick, 500);
+    saveState();
   }
 
   function pause() {
@@ -575,6 +576,7 @@
     const b = document.getElementById('btnStart');
     b.textContent = '▶ Resume'; b.classList.remove('paused');
     setStatus('Paused ⏸');
+    saveState();
   }
 
   function tick() {
@@ -603,12 +605,53 @@
     b.textContent = '▶ Start'; b.classList.remove('paused');
     setStatus('System ready');
     render(); updatePhaseUI();
+    saveState();
   }
 
   let muted = false;
   function toggleMute() {
     muted = !muted;
     document.getElementById('btnMute').textContent = muted ? '🔇' : '🔔';
+    saveState();
+  }
+
+  // ── persistence ──
+  function saveState() {
+    localStorage.setItem('lli', JSON.stringify({
+      hours, phase, cyclePos, totalDone, pDur, secs,
+      workSecsBase, elapsedSecsBase, phaseStartTime,
+      running, muted, tasks
+    }));
+  }
+
+  function loadState() {
+    const s = JSON.parse(localStorage.getItem('lli') || 'null');
+    if (!s) return;
+    hours = s.hours; phase = s.phase; cyclePos = s.cyclePos;
+    totalDone = s.totalDone; pDur = s.pDur;
+    workSecsBase = s.workSecsBase; elapsedSecsBase = s.elapsedSecsBase;
+    muted = s.muted || false;
+    tasks = s.tasks || [];
+    document.getElementById('btnMute').textContent = muted ? '🔇' : '🔔';
+    document.querySelectorAll('.btn-mode').forEach(b =>
+      b.classList.toggle('sel', parseInt(b.dataset.h) === hours));
+    updatePhaseUI();
+    if (s.running && s.phaseStartTime) {
+      phaseStartTime = s.phaseStartTime;
+      running = true;
+      const b = document.getElementById('btnStart');
+      b.textContent = '⏸ Pause'; b.classList.add('paused');
+      setStatus(phase === 'work' ? 'Focus mode active 🔥' : 'Break in progress ☕');
+      tid = setInterval(tick, 500);
+      tick();
+    } else if (s.secs != null) {
+      secs = s.secs;
+      if (totalDone > 0 || s.elapsedSecsBase > 0) {
+        const b = document.getElementById('btnStart');
+        b.textContent = '▶ Resume'; b.classList.remove('paused');
+        setStatus('Paused ⏸');
+      }
+    }
   }
 
   function playChime() {
@@ -748,6 +791,7 @@
   }
 
   function renderTasks() {
+    saveState();
     const list = document.getElementById('taskList');
     const empty = document.getElementById('taskEmpty');
     if (tasks.length === 0) {
@@ -890,6 +934,7 @@
 
   function p2(n) { return String(n).padStart(2, '0'); }
 
+  loadState();
   render();
   renderTasks();
 </script>
